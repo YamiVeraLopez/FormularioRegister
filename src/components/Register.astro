@@ -1,0 +1,458 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Input from "./Input.astro";
+
+const inputs = [
+	{
+		type: "text",
+		id: "firstname",
+		minlength: 3,
+		maxlength: 20,
+		placeholder: "Tu nombre",
+		required: true,
+		validations: ["text"],
+	},
+	{
+		type: "text",
+		id: "lastname",
+		minlength: 3,
+		maxlength: 20,
+		placeholder: "Tu apellido",
+		required: true,
+		validations: ["text"],
+	},
+	{
+		type: "text",
+		id: "username",
+		minlength: 3,
+		maxlength: 20,
+		placeholder: "Tu usuario",
+		required: true,
+		validations: ["text"],
+	},
+	{
+		type: "password",
+		id: "password",
+		minlength: 6,
+		maxlength: 20,
+		placeholder: "Tu contraseña",
+		required: true,
+		validations: ["password"],
+	},
+	{
+		type: "password",
+		id: "confirm-password",
+		minlength: 6,
+		maxlength: 20,
+		placeholder: "Confirma tu contraseña",
+		required: true,
+		validations: ["compare"],
+		compareValue: "document.getElementById('password')?.value",
+	},
+	{
+		type: "date",
+		id: "birthday",
+		required: true,
+		validations: ["date"],
+	},
+];
+---
+
+<Layout title="Registro">
+	<main
+		class="auth-page"
+		style="background-image: url('https://i.pinimg.com/736x/c7/c2/22/c7c2222447bcf5c8736e666c38052420.jpg')"
+	>
+		<div class="overlay"></div>
+		<div class="register-form content">
+			<h1 class="register-form__title">Registrarse</h1>
+			<form id="registration-form">
+				{
+					inputs.map((input) => (
+						<Input
+							type={input.type}
+							id={input.id}
+							minlength={input.minlength}
+							maxlength={input.maxlength}
+							placeholder={input.placeholder}
+							required={input.required}
+							validations={input.validations}
+							compareValue={input.compareValue}
+						/>
+					))
+				}
+				<div class="register-form__group--newsletter">
+					<label for="newsletter">Suscribirse al boletín</label>
+					<input type="checkbox" id="newsletter" />
+					<div class="error-message" id="newsletter-error"></div>
+				</div>
+				<button type="submit" class="submit-btn" disabled>
+					Registrarse
+				</button>
+			</form>
+		</div>
+	</main>
+	<div id="modal" class="modal">
+		<div class="modal-content">
+			<span id="modal-close" class="close">&times;</span>
+			<p id="modal-message"></p>
+			<div class="modal-buttons">
+				<button id="modal-confirm">Confirmar</button>
+				<button id="modal-cancel">Cancelar</button>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	@import url("https://fonts.googleapis.com/css2?family=Dongle&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+	html {
+		font-size: 16px;
+		font-family: "Poppins", sans-serif;
+	}
+	:root {
+		--white: oklch(1 0 0);
+		--black: oklch(0 0 0);
+		--grey: oklch(33.7% -0.012 94.24);
+		--violet: oklch(18.5% 0.07 308.5);
+		--dark-blue: oklch(10.4% 0.03 269.3);
+		--purple: oklch(45.29% 0.244 312.88);
+		--indigo: oklch(0.4465 0.1292 283.79);
+		--peachy-cream: oklch(90.35% 4.85% 38.8);
+		--creamy-ivory: oklch(96.47% 1.58% 73.68);
+	}
+
+	.auth-page {
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-size: cover;
+		background-position: center;
+		position: relative;
+
+		.overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.4);
+		}
+
+		.register-form {
+			background: rgba(255, 255, 255, 0.08);
+			position: relative;
+			z-index: 1;
+			width: 100%;
+			max-width: 350px;
+			/* padding: 1rem 4rem; */
+			margin-top: 1rem;
+			color: var(--white);
+			text-align: center;
+			border-radius: 10px;
+			border: 1px solid transparent;
+			box-shadow:
+				0 0 0 2px rgba(255, 255, 255, 0.6),
+				0 16px 32px rgba(0, 0, 0, 0.12);
+			display: grid;
+			place-items: center;
+
+			.register-form__title {
+				font-size: 1.5rem;
+				font-weight: 600;
+				color: var(--white);
+				text-transform: uppercase;
+			}
+
+			form {
+				display: flex;
+				flex-direction: column;
+				padding: 0 1rem;
+				/* gap: 1rem; */
+				width: 100%;
+				justify-content: center;
+
+				.register-form__group {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					width: 100%;
+					font-size: 14px;
+					color: var(--white);
+					margin-bottom: 1rem;
+
+					label {
+						display: block;
+						margin-bottom: 0.5rem;
+						width: 80%;
+						margin-bottom: 0.5rem;
+						font-weight: 300;
+						letter-spacing: 0.8px;
+						color: var(--white);
+						text-align: start;
+					}
+					input {
+						width: 80%;
+						padding: 0.8rem;
+						border: 1px solid var(--peachy-cream);
+						background-color: color-mix(
+							in oklch,
+							var(--peachy-cream) 70%,
+							transparent
+						);
+						border-radius: 5px;
+						font-size: 16px;
+						color: var(--indigo);
+					}
+					input:focus {
+						outline: none;
+					}
+				}
+				.register-form__group--newsletter {
+					display: grid;
+					grid-template-columns: 75% 25%;
+					place-items: center;
+					gap: 0.5rem;
+					width: 80%;
+					margin: 0 auto;
+					padding: 1em 1.5em;
+					border-radius: 5px;
+					background: color-mix(
+						in oklch,
+						var(--peachy-cream) 70%,
+						transparent
+					);
+					border: 1px solid var(--peachy-cream);
+
+					input[type="checkbox"] {
+						width: 20px;
+						height: 20px;
+						cursor: pointer;
+						accent-color: var(--indigo);
+					}
+					label {
+						font-size: 16px;
+						text-align: start;
+						font-weight: 600;
+						letter-spacing: 0.8px;
+						color: var(--indigo);
+					}
+				}
+
+				.submit-btn {
+					width: 90%;
+					padding: 1em;
+					margin: 1em auto;
+					background: var(--indigo);
+					color: white;
+					border: none;
+					border-radius: 5px;
+					font-size: 1rem;
+					cursor: pointer;
+					transition: background 0.3s;
+				}
+
+				.submit-btn:hover {
+					background: var(--indigo);
+				}
+				.submit-btn:disabled {
+					background: color-mix(
+						in oklch,
+						var(--grey) 80%,
+						transparent
+					);
+					cursor: not-allowed;
+				}
+			}
+		}
+	}
+	.modal {
+		display: none;
+		position: fixed;
+		z-index: 999;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		justify-content: center;
+		align-items: center;
+	}
+
+	.modal-content {
+		background: var(--white);
+		padding: 2rem;
+		border-radius: 10px;
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		color: var(--black);
+		position: relative;
+	}
+
+	.modal-buttons {
+		margin-top: 1rem;
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+	}
+
+	.modal-content button {
+		padding: 0.5rem 1rem;
+		cursor: pointer;
+		border: none;
+		border-radius: 5px;
+		background: var(--indigo);
+		color: var(--white);
+	}
+
+	.close {
+		position: absolute;
+		top: 10px;
+		right: 15px;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: var(--black);
+	}
+
+	@media screen and (min-width: 780px) {
+		.auth-page {
+			.register-form {
+				max-width: 600px;				
+			}
+		}
+	}
+
+	
+</style>
+
+<script is:inline>
+	document.addEventListener("DOMContentLoaded", () => {
+		const form = document.getElementById("registration-form");
+		const submitButton = form.querySelector("button[type='submit']");
+		const modal = document.getElementById("modal");
+		const modalMessage = document.getElementById("modal-message");
+		const modalClose = document.getElementById("modal-close");
+		const modalConfirm = document.getElementById("modal-confirm");
+		const modalCancel = document.getElementById("modal-cancel");
+		const confirmPasswordInput =
+			document.getElementById("confirm-password");
+		const passwordInput = document.getElementById("password");
+
+		// Validación genérica para todos los inputs
+		const validateField = (input) => {
+			const errorElement = document.getElementById(`${input.id}-error`);
+			let isValid = true;
+
+			// Validación básica de requerido
+			if (input.required && !input.value.trim()) {
+				errorElement.textContent = "Este campo es obligatorio";
+				errorElement.style.display = "block";
+				input.classList.add("error");
+				isValid = false;
+				return isValid;
+			}
+
+			// Validación de sólo texto
+			if (
+				input.type === "text" &&
+				!/^[a-zA-ZÀ-ÿ\s]+$/.test(input.value) &&
+				input.value.length > 0
+			) {
+				errorElement.textContent = `Solo letras y espacios permitidos`;
+				errorElement.style.display = "block";
+				input.classList.add("error");
+				isValid = false;
+			}
+			// Validación de longitud mínima/máxima
+			if (input.minlength && input.value.length < input.minlength) {
+				errorElement.textContent = `Mínimo ${input.minlength} caracteres`;
+				errorElement.style.display = "block";
+				input.classList.add("error");
+				isValid = false;
+			}
+
+			// Validación de comparación para confirmar contraseña
+			if (input.id === "confirm-password" && confirmPasswordInput) {
+				const compareValue = passwordInput.value;
+				if (input.value !== compareValue) {
+					errorElement.textContent = "Los valores no coinciden";
+					errorElement.style.display = "block";
+					input.classList.add("error");
+					isValid = false;
+				}
+			}
+
+			if (isValid) {
+				errorElement.style.display = "none";
+				input.classList.remove("error");
+			}
+
+			return isValid;
+		};
+
+		// Validar todo el formulario
+		const validateForm = () => {
+			const inputs = form.querySelectorAll(
+				"input:not([type='checkbox'])"
+			);
+			let isFormValid = true;
+
+			inputs.forEach((input) => {
+				if (!validateField(input)) {
+					isFormValid = false;
+				}
+			});
+
+			submitButton.disabled = !isFormValid;
+			return isFormValid;
+		};
+
+		// Event listeners para validación en tiempo real
+		form.querySelectorAll("input").forEach((input) => {
+			input.addEventListener("input", () => {
+				validateField(input);
+				validateForm();
+			});
+
+			input.addEventListener("blur", () => {
+				validateField(input);
+				validateForm();
+			});
+		});
+
+		// Manejo del modal
+		form.addEventListener("submit", (e) => {
+			e.preventDefault();
+			if (validateForm()) {
+				modalMessage.textContent = "¿Confirmas tu registro?";
+				modal.style.display = "flex";
+			}
+		});
+
+		modalClose.addEventListener("click", () => {
+			modal.style.display = "none";
+		});
+
+		modalCancel.addEventListener("click", () => {
+			modal.style.display = "none";
+		});
+
+		modalConfirm.addEventListener("click", () => {
+			modal.style.display = "none";
+			alert("¡Registro exitoso!");
+			form.reset();
+			submitButton.disabled = true;
+		});
+
+		modal.addEventListener("click", (e) => {
+			if (e.target === modal) {
+				modal.style.display = "none";
+			}
+		});
+
+		// Validación inicial
+		validateForm();
+	});
+</script>

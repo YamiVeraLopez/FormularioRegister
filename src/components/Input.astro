@@ -1,0 +1,241 @@
+---
+import Layout from "@layouts/Layout.astro";
+
+interface Props {
+	type?:
+		| "text"
+		| "email"
+		| "password"
+		| "number"
+		| "tel"
+		| "date"
+		| "compare";
+	id: string;
+	placeholder: string;
+	required?: boolean;
+	minlength?: number;
+	maxlength?: number;
+	validations?: Array<
+		| {
+				validate: (value: string, compareValue?: string) => boolean;
+				message: string;
+		  }
+		| string
+	>;
+	compareValue?: string;
+}
+
+const {
+	type = "text",
+	id,
+	placeholder,
+	required = false,
+	minlength = 3,
+	maxlength = 20,
+	validations = [],
+	compareValue = "",
+} = Astro.props;
+
+const typeValidations = {
+	text: {
+		validate: (value: string) =>
+			/^[a-zA-ZÀ-ÿ\s]+$/.test(value) &&
+			value.length >= minlength &&
+			value.length <= maxlength,
+		message: `Debe contener entre ${minlength} y ${maxlength} caracteres.`,
+	},
+	email: {
+		validate: (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+		message: "Formato de correo electrónico inválido.",
+	},
+	password: {
+		validate: (value: string) => value.length >= minlength,
+		message: `La contraseña debe tener al menos ${minlength} caracteres.`,
+	},
+	number: {
+		validate: (value: string) =>
+			!isNaN(Number(value)) &&
+			value.length >= minlength &&
+			value.length <= maxlength,
+		message: `Debe ser un número entre ${minlength} y ${maxlength} caracteres.`,
+	},
+	tel: {
+		validate: (value: string) => /^\d{10}$/.test(value),
+		message: "El número de teléfono debe tener 10 dígitos.",
+	},
+	date: {
+		validate: (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value),
+		message: "Formato de fecha inválido. Use YYYY-MM-DD.",
+	},
+	compare: {
+		validate: (value: string, compareValue: string) =>
+			value === compareValue,
+		message: "Los valores no coinciden.",
+	},
+};
+
+const validationRules = validations.map((validation) => {
+	if (typeof validation === "string") {
+		return (
+			typeValidations[validation] || { validate: () => true, message: "" }
+		);
+	}
+	return validation;
+});
+
+if (validations.length === 0 && typeValidations[type]) {
+	validationRules.push(typeValidations[type]);
+}
+---
+
+<Layout>
+	<div class="register-form__group">
+		<label for={id}>{placeholder}</label>
+		<div class="password-container">
+			<input
+				type={type}
+				id={id}
+				minlength={minlength}
+				maxlength={maxlength}
+				placeholder={placeholder}
+				required={required}
+				data-compare={type === "compare" ? compareValue : undefined}
+				class="input-field"
+			/>
+			{
+				type === "password" && (
+					<button
+						type="button"
+						class="toggle-password"
+						id={`toggle${id}`}
+						aria-label="Mostrar/ocultar contraseña"
+					></button>
+				)
+			}
+		</div>
+		<div id={`${id}-error`} class="error-message"></div>
+	</div>
+</Layout>
+
+<style>
+	.register-form__group {
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 1rem;
+		width: 100%;
+	}
+
+	.password-container {
+		position: relative;
+		width: 100%;
+	}
+
+	.input-field {
+		padding: 0.8rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 1rem;
+		width: 100%;
+		padding-right: 40px;
+	}
+
+	.toggle-password {
+		position: absolute;
+		right: 30px;
+		top: 50%;
+		transform: translateY(-50%);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.eye-icon {
+		width: 20px;
+		height: 20px;
+		color: #333;
+	}
+
+	.input-field.error {
+		border-color: #e74c3c;
+		background-color: rgba(231, 76, 60, 0.1);
+	}
+
+	.error-message {
+		color: #e74c3c;
+		font-size: 0.8rem;
+		margin-top: 0.3rem;
+		min-height: 1rem;
+		display: none;
+	}
+
+	.error-message.show {
+		display: block;
+	}
+
+	@media screen and (min-width: 780px) {
+		.input-field {
+			font-size: 0.9rem;
+		}
+
+		.toggle-password {
+			right: 60px;
+		}
+	}
+</style>
+
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+		const passwordField = document.querySelector("#password");
+		const confirmPasswordField =
+			document.querySelector("#confirm-password");
+		const toggleBtnPass = document.querySelector("#togglepassword");
+		const toggleBtnConfirmPass = document.querySelector(
+			"#toggleconfirm-password"
+		);
+
+		const icons = {
+			show: `
+        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#a06fbb">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+        </svg>
+      `,
+			hide: `
+        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#a06fbb">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.975 9.975 0 012.642-4.362M9.88 9.88a3 3 0 104.24 4.24" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 3l18 18" />
+        </svg>
+      `,
+		};
+
+		let passwordVisible = false;
+		let confirmPasswordVisible = false;
+
+		toggleBtnPass.innerHTML = icons.show;
+		toggleBtnConfirmPass.innerHTML = icons.show;
+
+		toggleBtnPass.addEventListener("click", () => {
+			passwordVisible = !passwordVisible;
+			passwordField.type = passwordVisible ? "text" : "password";
+			toggleBtnPass.innerHTML = passwordVisible ? icons.hide : icons.show;
+		});
+
+		toggleBtnConfirmPass.addEventListener("click", () => {
+			confirmPasswordVisible = !confirmPasswordVisible;
+			confirmPasswordField.type = confirmPasswordVisible
+				? "text"
+				: "password";
+			toggleBtnConfirmPass.innerHTML = confirmPasswordVisible
+				? icons.hide
+				: icons.show;
+		});
+	});
+</script>
