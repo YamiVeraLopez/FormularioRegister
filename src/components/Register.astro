@@ -319,12 +319,10 @@ const inputs = [
 	@media screen and (min-width: 780px) {
 		.auth-page {
 			.register-form {
-				max-width: 600px;				
+				max-width: 600px;
 			}
 		}
 	}
-
-	
 </style>
 
 <script is:inline>
@@ -397,6 +395,16 @@ const inputs = [
 			const inputs = form.querySelectorAll(
 				"input:not([type='checkbox'])"
 			);
+			const user = {
+				firstname: document.getElementById("firstname").value,
+				lastname: document.getElementById("lastname").value,
+				username: document.getElementById("username").value,
+				password: document.getElementById("password").value,
+				confirmPassword:
+					document.getElementById("confirm-password").value,
+				birthday: document.getElementById("birthday").value,
+				newsletter: document.getElementById("newsletter").checked,
+			};
 			let isFormValid = true;
 
 			inputs.forEach((input) => {
@@ -406,7 +414,7 @@ const inputs = [
 			});
 
 			submitButton.disabled = !isFormValid;
-			return isFormValid;
+			return { isFormValid, user };
 		};
 
 		// Event listeners para validación en tiempo real
@@ -425,7 +433,8 @@ const inputs = [
 		// Manejo del modal
 		form.addEventListener("submit", (e) => {
 			e.preventDefault();
-			if (validateForm()) {
+			const { isFormValid } = validateForm();
+			if (isFormValid) {
 				modalMessage.textContent = "¿Confirmas tu registro?";
 				modal.style.display = "flex";
 			}
@@ -440,10 +449,14 @@ const inputs = [
 		});
 
 		modalConfirm.addEventListener("click", () => {
-			modal.style.display = "none";
-			alert("¡Registro exitoso!");
-			form.reset();
-			submitButton.disabled = true;
+			const { isFormValid, user } = validateForm();
+			if (isFormValid) {
+				localStorage.setItem("user", JSON.stringify(user));
+				modal.style.display = "none";
+				alert(`${user.firstname}, te has registrado exitosamente!`);
+				form.reset();
+				submitButton.disabled = true;
+			}
 		});
 
 		modal.addEventListener("click", (e) => {
